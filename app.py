@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
+import plotly.io as pio
 
 from app.controller.app_controller import AppController
 from app.utils.validators import ensure_dataframe_loaded, numeric_columns, all_columns
+
+# Bake a dark template into figures by default (affects export too)
+pio.templates.default = "plotly_dark"
 
 st.set_page_config(page_title="CS6P05 Visual Analytics", layout="wide")
 
@@ -78,7 +82,10 @@ elif page == "Clean & Transform":
 
     with tab_clean:
         st.subheader("Handle missing values")
-        strategy = st.selectbox("Strategy", ["Drop rows with missing", "Fill missing (mean)", "Fill missing (median)", "Fill missing (0)", "Fill missing (custom)"])
+        strategy = st.selectbox(
+            "Strategy",
+            ["Drop rows with missing", "Fill missing (mean)", "Fill missing (median)", "Fill missing (0)", "Fill missing (custom)"]
+        )
         custom_val = None
         if strategy == "Fill missing (custom)":
             custom_val = st.text_input("Custom fill value (applies to all columns where possible)", value="0")
@@ -164,7 +171,16 @@ elif page == "Visualise":
         fig = controller.make_correlation(cols)
 
     if fig is not None:
-        st.plotly_chart(fig, use_container_width=True)
+        # IMPORTANT: bake template + backgrounds into the figure so PNG export matches
+        fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            legend_title_text=fig.layout.legend.title.text if fig.layout.legend and fig.layout.legend.title else None,
+        )
+
+        # IMPORTANT: theme=None prevents Streamlit from applying an extra runtime theme
+        st.plotly_chart(fig, use_container_width=True, theme=None)
         controller.set_last_figure(fig)
 
 elif page == "Export":
