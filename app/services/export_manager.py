@@ -1,13 +1,18 @@
-from __future__ import annotations
-import io
-import pandas as pd
+import shutil
+import plotly.io as pio
 
 class ExportManager:
-    def csv_bytes(self, df: pd.DataFrame) -> bytes:
+    def csv_bytes(self, df):
         return df.to_csv(index=False).encode("utf-8")
 
     def fig_png_bytes(self, fig) -> bytes:
-        # Plotly uses kaleido for static image export
-        buf = io.BytesIO()
-        fig.write_image(buf, format="png")
-        return buf.getvalue()
+        # Make sure Kaleido knows where Chromium is on Streamlit Cloud
+        chrome_path = (
+            shutil.which("chromium")
+            or shutil.which("chromium-browser")
+            or shutil.which("google-chrome")
+        )
+        if chrome_path:
+            pio.kaleido.scope.chromium_executable = chrome_path
+
+        return fig.to_image(format="png", engine="kaleido")
