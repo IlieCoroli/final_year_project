@@ -12,7 +12,7 @@ st.set_page_config(page_title="CS6P05 Visual Analytics", layout="wide")
 
 controller = AppController()
 
-st.title("Interactive Data Visualisation & Analytics (Prototype)")
+st.title("Interactive Data Visualisation & Analytics")
 
 # Sidebar navigation (task-based)
 page = st.sidebar.radio(
